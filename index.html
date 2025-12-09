@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>KIP O’CLOCK – Messenger Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0b1120;
+      color: #e5e7eb;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: stretch;
+      padding: 10px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 960px;
+      background: #020617;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.7);
+      display: flex;
+      flex-direction: row;
+    }
+
+    /* --------- Linke Spalte: Chats-Liste --------- */
+    .sidebar {
+      width: 38%;
+      min-width: 260px;
+      border-right: 1px solid rgba(148, 163, 184, 0.4);
+      display: flex;
+      flex-direction: column;
+      background: #020617;
+    }
+
+    .sidebar-header {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .logo-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+
+    .logo-sub {
+      font-size: 0.78rem;
+      color: #9ca3af;
+    }
+
+    .sidebar-header .clock-icon {
+      font-size: 1.4rem;
+    }
+
+    .chat-list {
+      list-style: none;
+      overflow-y: auto;
+    }
+
+    .chat-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      border-bottom: 1px solid rgba(15, 23, 42, 0.9);
+      transition: background 0.15s ease;
+    }
+
+    .chat-item:hover {
+      background: #020617;
+    }
+
+    .chat-item.active {
+      background: linear-gradient(90deg, #0f172a, #020617);
+    }
+
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: #020617;
+      flex-shrink: 0;
+      font-size: 1.1rem;
+    }
+
+    .avatar-1 { background: #fbbf24; } /* KIP O'CLOCK */
+    .avatar-2 { background: #34d399; }
+    .avatar-3 { background: #60a5fa; }
+    .avatar-4 { background: #f97316; }
+    .avatar-5 { background: #f87171; }
+    .avatar-6 { background: #a855f7; }
+    .avatar-7 { background: #22c55e; }
+
+    .chat-main {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .chat-name-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      margin-bottom: 2px;
+    }
+
+    .chat-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .chat-time {
+      font-size: 0.75rem;
+      color: #9ca3af;
+      flex-shrink: 0;
+      margin-left: 6px;
+    }
+
+    .chat-preview {
+      font-size: 0.78rem;
+      color: #9ca3af;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .unread-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #22c55e;
+      flex-shrink: 0;
+    }
+
+    /* --------- Rechte Spalte: Konversation --------- */
+    .conversation {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: radial-gradient(circle at top, #0f172a 0, #020617 55%);
+    }
+
+    .conv-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .conv-name {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .conv-status {
+      font-size: 0.78rem;
+      color: #9ca3af;
+    }
+
+    .conv-body {
+      flex: 1;
+      padding: 14px 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow-y: auto;
+    }
+
+    .system-note {
+      align-self: center;
+      font-size: 0.78rem;
+      color: #9ca3af;
+      margin-bottom: 2px;
+    }
+
+    .bubble {
+      max-width: 80%;
+      padding: 10px 12px;
+      border-radius: 16px;
+      line-height: 1.45;
+      font-size: 0.95rem;
+    }
+
+    .bubble-kip {
+      background: #0f172a;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      border-bottom-left-radius: 4px;
+    }
+
+    .bubble-player {
+      background: #22c55e;
+      color: #022c22;
+      border-bottom-right-radius: 4px;
+      align-self: flex-end;
+    }
+
+    .conv-footer {
+      padding: 10px 16px 14px;
+      border-top: 1px solid rgba(148, 163, 184, 0.4);
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      background: #020617;
+    }
+
+    .conv-footer button {
+      flex: 1;
+      min-width: 130px;
+      border: none;
+      border-radius: 999px;
+      padding: 10px 12px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.08s ease-out, box-shadow 0.08s ease-out;
+    }
+
+    .btn-yes {
+      background: #22c55e;
+      color: #022c22;
+      box-shadow: 0 0 16px rgba(34, 197, 94, 0.45);
+    }
+
+    .btn-no {
+      background: #f97316;
+      color: #451a03;
+      box-shadow: 0 0 16px rgba(249, 115, 22, 0.4);
+    }
+
+    .conv-footer button:active {
+      transform: translateY(1px) scale(0.98);
+      box-shadow: 0 0 3px rgba(15, 23, 42, 0.9);
+    }
+
+    .helper-text {
+      width: 100%;
+      font-size: 0.75rem;
+      color: #9ca3af;
+      margin-top: 2px;
+    }
+
+    /* --------- Responsive --------- */
+    @media (max-width: 720px) {
+      .app {
+        flex-direction: column;
+        max-width: 420px;
+      }
+      .sidebar {
+        width: 100%;
+        min-width: 0;
+        max-height: 260px;
+      }
+      .conversation {
+        border-top: 1px solid rgba(148, 163, 184, 0.4);
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Linke Spalte: Chat-Liste -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div>
+        <div class="logo-title">KIP O’CLOCK</div>
+        <div class="logo-sub">Demo-Messenger</div>
+      </div>
+      <div class="clock-icon">🕒</div>
+    </div>
+
+    <ul class="chat-list">
+      <!-- System-Chat: KIP O’CLOCK -->
+      <li class="chat-item active">
+        <div class="avatar avatar-1">K</div>
+        <div class="chat-main">
+          <div class="chat-name-row">
+            <div class="chat-name">KIP O’CLOCK</div>
+            <div class="chat-time">neu</div>
+          </div>
+          <div class="chat-preview"><strong>Neue Spielnachricht: Sei pünktlich!</strong></div>
+        </div>
+        <div class="unread-dot"></div>
+      </li>
+
+      <!-- Beispiel-Freunde – Platzhalter -->
+      <li class="chat-item">
+        <div class="avatar avatar-2">L</div>
+        <div class="chat-main">
+          <div class="chat-name-row">
+            <div class="chat-name">Lara</div>
+            <div class="chat-time">09:12</div>
+          </div>
+          <div class="chat-preview">Bin schon fast beim Treffpunkt …</div>
+        </div>
+      </li>
+
+      <li class="chat-item">
+        <div class="avatar avatar-3">N</div>
+        <div class="chat-main">
+          <div class="chat-name-row">
+            <div class="chat-name">Norbert</div>
+            <div class="chat-time">Gestern</div>
+          </div>
+          <div class="chat-preview">Schaffst du es heute pünktlich?</div>
+        </div>
+      </li>
+
+      <li class="chat-item">
+        <div class="avatar avatar-4">M</div>
+        <div class="chat-main">
+          <div class="chat-name-row">
+            <div class="chat-name">Mama</div>
+            <div class="chat-time">Mo</div>
+          </div>
+          <div class="chat-preview">Nicht vergessen: 18:00 Uhr Abendessen.</div>
+        </div>
+      </li>
+
+      <li class="chat-item">
+        <div class="avatar avatar-5">O</div>
+        <div class="chat-main">
+          <div class="chat-name-row">
+            <div class="chat-name">Opa</div>
+            <div class="chat-time">So</div>
+          </div>
+          <div class="chat-preview">Ich war immer fünf Minuten zu früh …</div>
+        </div>
+      </li>
+
+      <li class="chat-item">
+        <div class="avatar avatar-6">E</div>
+        <div class="chat-main">
+          <div class="chat-name-row">
+            <div class="chat-name">Elke</div>
+            <div class="chat-time">Sa</div>
+          </div>
+          <div class="chat-preview">Schick dir später noch die Uhrzeit.</div>
+        </div>
+      </li>
+
+      <li class="chat-item">
+        <div class="avatar avatar-7">S</div>
+        <div class="chat-main">
+          <div class="chat-name-row">
+            <div class="chat-name">Selina</div>
+            <div class="chat-time">Fr</div>
+          </div>
+          <div class="chat-preview">Treffen wir uns wieder im Park?</div>
+        </div>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- Rechte Spalte: Konversation -->
+  <main class="conversation">
+    <header class="conv-header">
+      <div class="avatar avatar-1">K</div>
+      <div>
+        <div class="conv-name">KIP O’CLOCK</div>
+        <div class="conv-status">Systemnachricht – Spielstart</div>
+      </div>
+    </header>
+
+    <section class="conv-body">
+      <div class="system-note">Neue Nachricht von KIP O’CLOCK</div>
+
+      <div class="bubble bubble-kip">
+        <strong>Hallo!</strong><br><br>
+        Wenn du an der Reihe bist, öffne eine deiner Nachrichten.<br>
+        Lies die Uhrzeit im Text.<br><br>
+        <strong>Sag vor dem Kippen an</strong>, wie oft du kippen möchtest
+        (1&nbsp;bis&nbsp;12).<br>
+        Kippe den Würfel anschließend genau so oft
+        <strong>im Uhrzeigersinn</strong>.<br><br>
+        Triffst du die Uhrzeit, bekommst du einen
+        <strong>Pünktlichkeitspunkt</strong>.<br><br>
+        Wichtig: Die <strong>Kippanzahl muss vorher angesagt</strong> werden.
+        <br>
+        <em>12 Kippbewegungen entsprechen einer vollen Runde –
+        danach liegt der Würfel wieder wie am Anfang.</em>
+      </div>
+
+      <!-- Beispiel einer Spielerrückmeldung -->
+      <div class="bubble bubble-player">
+        Ich bin da – Pünktlichkeitspunkt für mich! ✔
+      </div>
+    </section>
+
+    <footer class="conv-footer">
+      <button class="btn-yes">Ich bin da</button>
+      <button class="btn-no">Hab’s nicht geschafft</button>
+      <div class="helper-text">
+        (In der Demo machen die Buttons noch nichts – sie zeigen nur,
+        wie die Rückmeldungen im Spiel aussehen.)
+      </div>
+    </footer>
+  </main>
+
+</div>
+
+</body>
+</html>
